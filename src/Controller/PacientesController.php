@@ -98,11 +98,16 @@ class PacientesController extends AbstractController
             $paciente->setApellidos($data['apellidos']);
         }
         if (isset($data['atendido'])) {
-            $paciente->setAtendidopor($data['atendido']);
+            $trabajador = $em->getRepository(EntityTrabajadores::class)->find($data['atendido']);
+            if ($trabajador) {
+                $paciente->setAtendidopor($trabajador);
+            } else {
+                return $this->json(['message' => 'No se le ha pasado un trabajador correctamente']);
+            }
         }
         if (isset($data['numCarnet'])) {
             $paciente->setNumCarnet($data['numCarnet']);
-        }
+        }   
         if (isset($data['idEnfermedad'])) {
             $paciente->setIdEnfermedad($data['idEnfermedad']);
         }
