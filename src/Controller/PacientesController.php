@@ -44,7 +44,7 @@ class PacientesController extends AbstractController
         if (isset($data['atendido'])) {
             $trabajador = $em->getRepository(EntityTrabajadores::class)->find($data['atendido']);
             if ($trabajador) {
-                $paciente->setAtendidopor($trabajador);
+                $paciente->setAtendidopor($data['atendido']);
             } else {
                 return $this->json(['message' => 'No se le ha pasado un trabajador correctamente']);
             }
@@ -58,26 +58,27 @@ class PacientesController extends AbstractController
         return $this->json(['message' => 'Paciente generado correctamente']);
     }
     //------------------------------------------------------------------------------------//
-    #[Route('/pacientes/{id}', name: 'getPacientebyId', methods: ['GET'])]
-    public function getPacientebyId(ManagerRegistry $doctrine, int $id): Response
-    {
-        $paciente = $doctrine->getRepository(EntityPacientes::class)->find($id);
-        if (!$paciente) {
-            return $this->json(['message' => 'Paciente no encontrado'], 404);
-        } else {
+        #[Route('/pacientes/{id}', name: 'getPacientebyId', methods: ['GET'])]
+        public function getPacientebyId(ManagerRegistry $doctrine, int $id): Response
+        {   
+            $paciente = $doctrine->getRepository(EntityPacientes::class)->find($id);
+            $trabajador = $doctrine->getRepository(EntityTrabajadores::class);
+            if (!$paciente) {
+                return $this->json(['message' => 'Paciente no encontrado'], 404);
+            } else {
+            }
+            $data = [];
+            
+            $data = [
+                'id' => $paciente->getId(),
+                'num_carnet' => $paciente->getNumCarnet(),
+                'nombre' => $paciente->getNombre(),
+                'apellido' => $paciente->getApellidos(),
+                'atendido_por' => $paciente->getAtendidopor()->getNombre(),
+                'id_enfermedad' => $paciente->getIdEnfermedad()
+            ];
+            return $this->json($data);
         }
-        $data = [];
-
-        $data = [
-            'id' => $paciente->getId(),
-            'num_carnet' => $paciente->getNumCarnet(),
-            'nombre' => $paciente->getNombre(),
-            'apellido' => $paciente->getApellidos(),
-            'atendido_por' => $paciente->getAtendidopor(),
-            'id_enfermedad' => $paciente->getIdEnfermedad()
-        ];
-        return $this->json($data);
-    }
     //------------------------------------------------------------------------------------//
     #[Route('/pacientes/put/{id}', name: 'putPacienteby', methods: ['PUT'])]
     public function putPacienteby(ManagerRegistry $doctrine, Request $request, int $id): Response
@@ -130,24 +131,27 @@ class PacientesController extends AbstractController
     }
     //------------------------------------------------------------------------------------//
     #[Route('/pacientes', name: 'getAllpacientes', methods: ['GET'])]
-    public function getAllpacientes(ManagerRegistry $doctrine): Response
-    {
-        $res = $doctrine->getRepository(EntityPacientes::class)->findAll();
-        if (!$res) {
-            return $this->json(['message' => 'pacientes no encontrados'], 404);
+    public function getAllpacientes(ManagerRegistry $doctrine)
+    {   
+        $paciente = $doctrine->getRepository(EntityPacientes::class)->findAll();
+        if (!$paciente) {
+            return $this->json(['message' => 'Paciente no encontrado'], 404);
         } else {
-            $data = [];
-            foreach ($res as $e) {
-                $data[] = [
-                    'id' => $e->getId(),
-                    'num_carnet' => $e->getNumCarnet(),
-                    'nombre' => $e->getNombre(),
-                    'apellido' => $e->getApellidos(),
-                    'atendido_por' => $e->getAtendidopor(),
-                    'id_enfermedad' => $e->getIdEnfermedad()
-                ];
-            }
         }
+        $data = [];
+
+        foreach ($paciente as $e) {
+            $atendido_por = $e->getAtendidopor();
+            $atendido_por_data = $atendido_por->getNombre();
+                     $data[] = [
+                         'id' => $e->getId(),
+                         'num_carnet' => $e->getNumCarnet(),
+                         'nombre' => $e->getNombre(),
+                         'apellido' => $e->getApellidos(),
+                         'atendido_por' => $atendido_por_data,
+                         'id_enfermedad' => $e->getIdEnfermedad()
+                     ];
+                 }
         return $this->json($data);
     }
 }

@@ -32,12 +32,7 @@ class EntityTrabajadores
     private string $grupo = '';
 
     #[ORM\OneToMany(mappedBy: 'atendidopor', targetEntity: EntityPacientes::class)]
-    private Collection $entityPacientes;
-
-    public function __construct()
-    {
-        $this->entityPacientes = new ArrayCollection();
-    }
+    private $entityPacientes;
 
     public function getId(): ?int
     {
@@ -125,7 +120,6 @@ class EntityTrabajadores
     public function removeEntityPaciente(EntityPacientes $entityPaciente): self
     {
         if ($this->entityPacientes->removeElement($entityPaciente)) {
-            // set the owning side to null (unless already changed)
             if ($entityPaciente->getAtendidopor() === $this) {
                 $entityPaciente->setAtendidopor(null);
             }
